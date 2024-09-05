@@ -1,0 +1,11 @@
+.DS_Store
+**/target/
+*.iml
+.idea
+*.iws
+*.ipr
+.bsp
+.bloop
+.metals
+metals.sbt
+.vscode
