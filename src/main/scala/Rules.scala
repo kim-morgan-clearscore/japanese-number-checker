@@ -32,143 +32,119 @@ object Rules {
         Rewrite.lift { case '9' :: rest => Number(9) :: rest }
       )
 
-  val normaliseInput: Rewrite[Entity] = Rewrite
-    .lift[Entity] {
-      case c :: '十' :: rest
-          if (List('二', '三', '四', '五', '六', '七', '八', '九').contains(c)) =>
-        c :: JapaneseMultiplier('十') :: rest
+  val japaneseDigits = Rewrite
+    .lift[Entity] { case '一' :: rest =>
+      JapaneseNumber(1) :: rest
     }
     .orElse(
-      Rewrite.lift {
-        case c :: '百' :: rest
-            if (List('二', '三', '四', '五', '六', '七', '八', '九').contains(c)) =>
-          c :: JapaneseMultiplier('百') :: rest
-      }
+      Rewrite.lift { case '二' :: rest => JapaneseNumber(2) :: rest }
     )
     .orElse(
-      Rewrite.lift {
-        case c :: '千' :: rest
-            if List('二', '三', '四', '五', '六', '七', '八', '九').contains(c) =>
-          c :: JapaneseMultiplier('千') :: rest
+      Rewrite.lift { case '三' :: rest => JapaneseNumber(3) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '四' :: rest => JapaneseNumber(4) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '五' :: rest => JapaneseNumber(5) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '六' :: rest => JapaneseNumber(6) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '七' :: rest => JapaneseNumber(7) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '八' :: rest => JapaneseNumber(8) :: rest }
+    )
+    .orElse(
+      Rewrite.lift { case '九' :: rest => JapaneseNumber(9) :: rest }
+    )
+
+  val japaneseTens = Rewrite
+    .lift[Entity] {
+      case JapaneseNumber(a) :: '十' :: JapaneseNumber(b) :: rest =>
+        JapaneseNumber(a * 10 + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: '十' :: rest =>
+        JapaneseNumber(a * 10) :: rest
       }
     )
     .orElse(
       Rewrite.lift { case '十' :: rest =>
-        '一' :: JapaneseMultiplier('十') :: rest
+        JapaneseNumber(10) :: rest
+      }
+    )
+
+  val japaneseHundreds = Rewrite
+    .lift[Entity] {
+      case JapaneseNumber(a) :: '百' :: JapaneseNumber(b) :: rest =>
+        JapaneseNumber(a * 100 + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: '百' :: rest =>
+        JapaneseNumber(a * 100) :: rest
       }
     )
     .orElse(
       Rewrite.lift { case '百' :: rest =>
-        '一' :: JapaneseMultiplier('百') :: rest
+        JapaneseNumber(100) :: rest
+      }
+    )
+
+  val japaneseThousands = Rewrite
+    .lift[Entity] {
+      case JapaneseNumber(a) :: '千' :: JapaneseNumber(b) :: rest =>
+        JapaneseNumber(a * 1000 + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: '千' :: rest =>
+        JapaneseNumber(a * 1000) :: rest
       }
     )
     .orElse(
       Rewrite.lift { case '千' :: rest =>
-        '一' :: JapaneseMultiplier('千') :: rest
+        JapaneseNumber(1000) :: rest
+      }
+    )
+
+  val japaneseTenThousands = Rewrite
+    .lift[Entity] {
+      case JapaneseNumber(a) :: '万' :: JapaneseNumber(b) :: rest =>
+        JapaneseNumber(a * 10000 + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: '万' :: rest =>
+        JapaneseNumber(a * 10000) :: rest
       }
     )
     .orElse(
       Rewrite.lift { case '万' :: rest =>
-        JapaneseMultiplier('万') :: rest
+        JapaneseNumber(10000) :: rest
+      }
+    )
+
+  val japaneseHundredMillions = Rewrite
+    .lift[Entity] {
+      case JapaneseNumber(a) :: '億' :: JapaneseNumber(b) :: rest =>
+        JapaneseNumber(a * 100000000 + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: '億' :: rest =>
+        JapaneseNumber(a * 100000000) :: rest
       }
     )
     .orElse(
       Rewrite.lift { case '億' :: rest =>
-        JapaneseMultiplier('億') :: rest
+        JapaneseNumber(100000000) :: rest
       }
     )
 
-  val japaneseDigits: Rewrite[Entity] =
-    Rewrite
-      .lift[Entity] { case '一' :: rest => JapaneseNumber(1) :: rest }
-      .orElse(
-        Rewrite.lift { case '二' :: rest => JapaneseNumber(2) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '三' :: rest => JapaneseNumber(3) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '四' :: rest => JapaneseNumber(4) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '五' :: rest => JapaneseNumber(5) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '六' :: rest => JapaneseNumber(6) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '七' :: rest => JapaneseNumber(7) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '八' :: rest => JapaneseNumber(8) :: rest }
-      )
-      .orElse(
-        Rewrite.lift { case '九' :: rest => JapaneseNumber(9) :: rest }
-      )
-
-  val japaneseMultipliers: Rewrite[Entity] = Rewrite
-    .lift[Entity] { case JapaneseNumber(a) :: JapaneseMultiplier('十') :: rest =>
-      JapaneseNumber(a * 10) :: rest
-    }
-    .orElse(
-      Rewrite.lift {
-        case JapaneseNumber(a) :: JapaneseMultiplier('百') :: rest =>
-          JapaneseNumber(a * 100) :: rest
-      }
-    )
-    .orElse(
-      Rewrite.lift {
-        case JapaneseNumber(a) :: JapaneseMultiplier('千') :: rest =>
-          JapaneseNumber(a * 1000) :: rest
-      }
-    )
-    .orElse(
-      Rewrite.lift {
-        case JapaneseNumber(a) :: JapaneseMultiplier('万') :: rest =>
-          JapaneseNumber(a * 10000) :: rest
-      }
-    )
-    .orElse(
-      Rewrite.lift {
-        case JapaneseNumber(a) :: JapaneseMultiplier('億') :: rest =>
-          JapaneseNumber(a * 100000000) :: rest
-      }
-    )
-
-  val japaneseNumberCombination: Rewrite[Entity] = Rewrite.lift {
+  val japaneseNumberCombination = Rewrite.lift[Entity] {
     case JapaneseNumber(a) :: JapaneseNumber(b) :: rest =>
       JapaneseNumber(a + b) :: rest
   }
-
-//  val japaneseTens: Rewrite[Entity] = Rewrite
-//    .lift[Entity] { case JapaneseDigit(a) :: '十' :: rest =>
-//      JapaneseNumberBlock(base = 10, value = a * 10) :: rest
-//    }
-//    .orElse(
-//      Rewrite.lift { case '十' :: rest =>
-//        JapaneseNumberBlock(base = 10, value = 10) :: rest
-//      }
-//    )
-//
-//  val japaneseHundreds: Rewrite[Entity] = Rewrite
-//    .lift[Entity] { case JapaneseDigit(a) :: '百' :: rest =>
-//      JapaneseNumberBlock(base = 100, value = a * 100) :: rest
-//    }
-//    .orElse(
-//      Rewrite.lift { case '百' :: rest =>
-//        JapaneseNumberBlock(base = 100, value = 100) :: rest
-//      }
-//    )
-//
-//  val japaneseThousands: Rewrite[Entity] = Rewrite
-//    .lift[Entity] { case JapaneseDigit(a) :: '千' :: rest =>
-//      JapaneseNumberBlock(base = 1000, value = a * 1000) :: rest
-//    }
-//    .orElse(
-//      Rewrite.lift { case '千' :: rest =>
-//        JapaneseNumberBlock(base = 1000, value = 1000) :: rest
-//      }
-//    )
 
   // implement kanji months later
   val japaneseMonths: Rewrite[Entity] =

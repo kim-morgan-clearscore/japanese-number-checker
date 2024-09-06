@@ -92,5 +92,13 @@ object Main extends App {
 // D(4000), 万, D(1000), D(200)
 // D(40 million), (1000), (200)
 
+//二十二億三千六百五十万千八百一
+// N(2) 十 N(2) 億 N(3) 千 N(6) 百 N(5) 十 万 千 N(8) 百 N(1) // evaluate digits
+// N(22) 億 N(3) 千 N(6) 百 (5) 万 千 N(8) 百 N(1) // evaluate 10s
+// N(22) 億 N(3) 千 N(650) 万 千 N(801) // evaluate 100s
+// N(22) 億 N(3) 千 N(650) 万 千 N(801) // evaluate 1000s
+// N(22) 億 N(3650) 万 N(1801) // evaluate 10,000s
+// N(22) 億 N(36501801) // evaluate 100 millions
+// N(2,236,511,801) //2,236,501,801
   runTests()
 }

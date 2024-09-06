@@ -29,58 +29,81 @@ object JapaneseNumberChecker {
     }
 
   @tailrec
-  def iterate[A](text: List[Char | A], rule: Rewrite[A]): List[Char | A] = {
+  def iterate[A](
+      text: List[Char | A],
+      rules: List[Rewrite[A]]
+  ): List[Char | A] = {
     println(text)
 
-    val t = rewrite(text, rule)
+    val t = rules.foldLeft(text) { (t, rule) =>
+      {
+        println(t)
+        rewrite(t, rule)
+      }
+    }
+
     if (t == text) text
-    else iterate(t, rule)
+    else iterate(t, rules)
   }
 
   def runTests(): Unit = {
     println(rewrite("1 is something we should find".toList, singleDigit))
-    println(iterate("1 is something we should find".toList, singleDigit))
-    println(iterate("一と二を見つけるといいでしょう".toList, japaneseDigits))
+    println(iterate("1 is something we should find".toList, List(singleDigit)))
+    println(iterate("一と二を見つけるといいでしょう".toList, List(japaneseDigits)))
     println(
       iterate(
         "もはや12月ですね".toList,
-        singleDigit.orElse(multiDigit).orElse(japaneseMonths)
+        List(singleDigit.orElse(multiDigit).orElse(japaneseMonths))
       )
     )
     println(
       iterate(
         "今年は2024年です".toList,
-        singleDigit.orElse(multiDigit).orElse(japaneseYears)
+        List(singleDigit.orElse(multiDigit).orElse(japaneseYears))
       )
     )
     println(
       iterate(
         "明治3年".toList,
-        singleDigit.orElse(multiDigit).orElse(japaneseYears)
+        List(singleDigit.orElse(multiDigit).orElse(japaneseYears))
       )
     )
     println(
       iterate(
-        "二十億三千六百五十万千八百一".toList,
-        normaliseInput
-          .orElse(japaneseDigits)
-          .orElse(japaneseMultipliers)
-          .orElse(japaneseNumberCombination)
+        "二十二億三千六百五十万千八百一".toList,
+        List(
+          japaneseDigits,
+          japaneseTens,
+          japaneseHundreds,
+          japaneseThousands,
+          japaneseTenThousands,
+          japaneseHundredMillions,
+          japaneseNumberCombination
+        )
       )
     )
-    // japanese number over 10000
+
     println(
       iterate(
-        "四千万".toList,
-        normaliseInput
-          .orElse(japaneseDigits)
-          .orElse(japaneseMultipliers)
-          .orElse(japaneseNumberCombination)
+        "昭和60年2月に三千万二千三十一円稼ぎました。".toList,
+        List(
+          japaneseDigits,
+          japaneseTens,
+          japaneseHundreds,
+          japaneseThousands,
+          japaneseTenThousands,
+          japaneseHundredMillions,
+          japaneseNumberCombination
+            .orElse(singleDigit)
+            .orElse(multiDigit)
+            .orElse(japaneseMonths)
+            .orElse(japaneseYears)
+        )
       )
-    ) // 4011200
-    println(iterate("1012".toList, singleDigit.orElse(multiDigit)))
-    println(iterate("65535".toList, singleDigit.orElse(multiDigit)))
-    println(iterate("262144".toList, singleDigit.orElse(multiDigit)))
-    println(iterate("16777215".toList, singleDigit.orElse(multiDigit)))
+    )
+//    println(iterate("1012".toList, singleDigit.orElse(multiDigit)))
+//    println(iterate("65535".toList, singleDigit.orElse(multiDigit)))
+//    println(iterate("262144".toList, singleDigit.orElse(multiDigit)))
+//    println(iterate("16777215".toList, singleDigit.orElse(multiDigit)))
   }
 }
