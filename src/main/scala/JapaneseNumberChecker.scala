@@ -1,10 +1,10 @@
-import Rules.*
+import Rules.{singleDigit, *}
 import model.*
 
 import scala.annotation.tailrec
 
 object JapaneseNumberChecker {
-  private def rewrite[A](
+  def rewrite[A](
       text: List[Char | A],
       rule: Rewrite[A]
   ): List[Char | A] =
@@ -28,82 +28,34 @@ object JapaneseNumberChecker {
       case Nil => Nil
     }
 
-  @tailrec
-  def iterate[A](
+  def orderedIterate[A](
       text: List[Char | A],
       rules: List[Rewrite[A]]
   ): List[Char | A] = {
+    rules.foldLeft(text) { (t, rule) => iterate(t, rule) }
+  }
+
+  @tailrec
+  def iterate[A](text: List[Char | A], rule: Rewrite[A]): List[Char | A] = {
     println(text)
 
-    val t = rules.foldLeft(text) { (t, rule) =>
-      {
-        println(t)
-        rewrite(t, rule)
-      }
-    }
-
+    val t = rewrite(text, rule)
     if (t == text) text
-    else iterate(t, rules)
+    else iterate(t, rule)
   }
 
-  def runTests(): Unit = {
-    println(rewrite("1 is something we should find".toList, singleDigit))
-    println(iterate("1 is something we should find".toList, List(singleDigit)))
-    println(iterate("一と二を見つけるといいでしょう".toList, List(japaneseDigits)))
-    println(
-      iterate(
-        "もはや12月ですね".toList,
-        List(singleDigit.orElse(multiDigit).orElse(japaneseMonths))
-      )
-    )
-    println(
-      iterate(
-        "今年は2024年です".toList,
-        List(singleDigit.orElse(multiDigit).orElse(japaneseYears))
-      )
-    )
-    println(
-      iterate(
-        "明治3年".toList,
-        List(singleDigit.orElse(multiDigit).orElse(japaneseYears))
-      )
-    )
-    println(
-      iterate(
-        "二十二億三千六百五十万千八百一".toList,
-        List(
-          japaneseDigits,
-          japaneseTens,
-          japaneseHundreds,
-          japaneseThousands,
-          japaneseTenThousands,
-          japaneseHundredMillions,
-          japaneseNumberCombination
-        )
-      )
-    )
-
-    println(
-      iterate(
-        "昭和60年2月に三千万二千三十一円稼ぎました。".toList,
-        List(
-          japaneseDigits,
-          japaneseTens,
-          japaneseHundreds,
-          japaneseThousands,
-          japaneseTenThousands,
-          japaneseHundredMillions,
-          japaneseNumberCombination
-            .orElse(singleDigit)
-            .orElse(multiDigit)
-            .orElse(japaneseMonths)
-            .orElse(japaneseYears)
-        )
-      )
-    )
-//    println(iterate("1012".toList, singleDigit.orElse(multiDigit)))
-//    println(iterate("65535".toList, singleDigit.orElse(multiDigit)))
-//    println(iterate("262144".toList, singleDigit.orElse(multiDigit)))
-//    println(iterate("16777215".toList, singleDigit.orElse(multiDigit)))
-  }
+  val allRules: List[Rewrite[Entity]] = List(
+    singleDigit
+      .orElse(multiDigit),
+    japaneseDigits,
+    japaneseTens,
+    japaneseHundreds,
+    japaneseThousands,
+    japaneseTenThousands,
+    japaneseHundredMillions,
+    japaneseMonths
+      .orElse(japaneseYears)
+      .orElse(mixedNumberCombination)
+      .orElse(japaneseNumberCombination)
+  )
 }

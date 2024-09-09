@@ -67,7 +67,17 @@ object Rules {
         JapaneseNumber(a * 10 + b) :: rest
     }
     .orElse(
+      Rewrite.lift { case Number(a) :: '十' :: Number(b) :: rest =>
+        JapaneseNumber(a * 10 + b) :: rest
+      }
+    )
+    .orElse(
       Rewrite.lift { case JapaneseNumber(a) :: '十' :: rest =>
+        JapaneseNumber(a * 10) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift { case Number(a) :: '十' :: rest =>
         JapaneseNumber(a * 10) :: rest
       }
     )
@@ -88,6 +98,16 @@ object Rules {
       }
     )
     .orElse(
+      Rewrite.lift { case Number(a) :: '百' :: Number(b) :: rest =>
+        JapaneseNumber(a * 100 + b) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift { case Number(a) :: '百' :: rest =>
+        JapaneseNumber(a * 100) :: rest
+      }
+    )
+    .orElse(
       Rewrite.lift { case '百' :: rest =>
         JapaneseNumber(100) :: rest
       }
@@ -104,6 +124,16 @@ object Rules {
       }
     )
     .orElse(
+      Rewrite.lift { case Number(a) :: '千' :: Number(b) :: rest =>
+        JapaneseNumber(a * 1000 + b) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift { case Number(a) :: '千' :: rest =>
+        JapaneseNumber(a * 1000) :: rest
+      }
+    )
+    .orElse(
       Rewrite.lift { case '千' :: rest =>
         JapaneseNumber(1000) :: rest
       }
@@ -114,8 +144,16 @@ object Rules {
       case JapaneseNumber(a) :: '万' :: JapaneseNumber(b) :: rest =>
         JapaneseNumber(a * 10000 + b) :: rest
     }
+    .orElse(Rewrite.lift { case JapaneseNumber(a) :: '万' :: rest =>
+      JapaneseNumber(a * 10000) :: rest
+    })
     .orElse(
-      Rewrite.lift { case JapaneseNumber(a) :: '万' :: rest =>
+      Rewrite.lift { case Number(a) :: '万' :: Number(b) :: rest =>
+        JapaneseNumber(a * 10000 + b) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift { case Number(a) :: '万' :: rest =>
         JapaneseNumber(a * 10000) :: rest
       }
     )
@@ -136,6 +174,16 @@ object Rules {
       }
     )
     .orElse(
+      Rewrite.lift { case Number(a) :: '億' :: Number(b) :: rest =>
+        JapaneseNumber(a * 100000000 + b) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift { case Number(a) :: '億' :: rest =>
+        JapaneseNumber(a * 100000000) :: rest
+      }
+    )
+    .orElse(
       Rewrite.lift { case '億' :: rest =>
         JapaneseNumber(100000000) :: rest
       }
@@ -146,19 +194,42 @@ object Rules {
       JapaneseNumber(a + b) :: rest
   }
 
-  // implement kanji months later
+  val mixedNumberCombination = Rewrite
+    .lift[Entity] { case Number(a) :: JapaneseNumber(b) :: Number(c) :: rest =>
+      JapaneseNumber(a * b + c) :: rest
+    }
+    .orElse(
+      Rewrite
+        .lift { case Number(a) :: JapaneseNumber(b) :: rest =>
+          JapaneseNumber(a * b) :: rest
+        }
+    )
+    .orElse(
+      Rewrite.lift { case JapaneseNumber(a) :: Number(b) :: rest =>
+        JapaneseNumber(a + b) :: rest
+      }
+    )
+
   val japaneseMonths: Rewrite[Entity] =
     Rewrite
-      .lift[Entity] { case Number(a) :: '月' :: rest => Month(a) :: rest }
+      .lift[Entity] { case Number(a) :: '月' :: rest =>
+        Month(a.toInt) :: rest
+      } orElse (Rewrite.lift { case JapaneseNumber(a) :: '月' :: rest =>
+      Month(a.toInt) :: rest
+    })
 
-  // implement kanji years later
   val japaneseYears: Rewrite[Entity] =
     Rewrite
       .lift[Entity] { case Number(a) :: '年' :: rest =>
-        Year(a) :: rest
+        Year(a.toInt) :: rest
       }
       .orElse(
-        Rewrite.lift { case '元' :: '年' :: rest => Year(0) :: rest }
+        Rewrite.lift { case JapaneseNumber(a) :: '年' :: rest =>
+          Year(a.toInt) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case '元' :: '年' :: rest => Year(1) :: rest }
       )
       .orElse(
         Rewrite.lift { case '明' :: '治' :: rest => Year(1868) :: rest }
@@ -189,7 +260,7 @@ object Rules {
       if (b < 10) Number(a * 10 + b) :: rest
       else
         Number(
-          a * Math.pow(10, Math.floor(log10(b)) + 1).toInt + b
+          a * Math.pow(10, Math.floor(log10(b.toInt)) + 1).toInt + b
         ) :: rest
     }
 
