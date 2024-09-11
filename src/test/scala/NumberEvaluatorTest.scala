@@ -1,12 +1,12 @@
 import munit.FunSuite
 import model.*
 import Rules.*
-import JapaneseNumberChecker.*
+import NumberEvaluator.*
 
-class JapaneseNumberCheckerTest extends FunSuite {
+class NumberEvaluatorTest extends FunSuite {
   test("rewrite: applies rewrite rules to a string once") {
     assertEquals(
-      JapaneseNumberChecker.rewrite(
+      NumberEvaluator.rewrite(
         "1 is something we should find".toList,
         singleDigit
       ),
@@ -18,7 +18,7 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: rewrite rule is applied repeatedly until no more matches (single digit)"
   ) {
     assertEquals(
-      JapaneseNumberChecker
+      NumberEvaluator
         .orderedIterate(
           "1 is something we should find".toList,
           List(singleDigit)
@@ -31,7 +31,7 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle single Japanese digits"
   ) {
     assertEquals(
-      JapaneseNumberChecker
+      NumberEvaluator
         .orderedIterate("一と二を見つけるといいでしょう".toList, List(japaneseDigits)),
       List(JapaneseNumber(1), 'と', JapaneseNumber(2)) ++ "を見つけるといいでしょう".toList
     )
@@ -41,10 +41,10 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle japanese month"
   ) {
     assertEquals(
-      JapaneseNumberChecker
+      NumberEvaluator
         .orderedIterate(
           "もはや12月ですね".toList,
-          allRules
+          allJapaneseRules
         ),
       List('も', 'は', 'や', Month(12), 'で', 'す', 'ね')
     )
@@ -54,10 +54,10 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle western year"
   ) {
     assertEquals(
-      JapaneseNumberChecker
+      NumberEvaluator
         .orderedIterate(
           "今年は2024年です".toList,
-          allRules
+          allJapaneseRules
         ),
       List('今', '年', 'は', Year(2024), 'で', 'す')
     )
@@ -67,10 +67,10 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle japanese year - meiji"
   ) {
     assertEquals(
-      JapaneseNumberChecker
+      NumberEvaluator
         .orderedIterate(
           "明治3年".toList,
-          allRules
+          allJapaneseRules
         ),
       List(Year(1870))
     )
@@ -80,9 +80,9 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle japanese year - showa"
   ) {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "昭和60年".toList,
-        allRules
+        allJapaneseRules
       ),
       List(Year(1985))
     )
@@ -92,9 +92,9 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle japanese year - heisei"
   ) {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "平成20年".toList,
-        allRules
+        allJapaneseRules
       ),
       List(Year(2008))
     )
@@ -104,9 +104,9 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle japanese year - reiwa"
   ) {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "令和2年".toList,
-        allRules
+        allJapaneseRules
       ),
       List(Year(2020))
     )
@@ -114,9 +114,9 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle japanese year with number in Kanji") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "平成三年".toList,
-        allRules
+        allJapaneseRules
       ),
       List(Year(1991))
     )
@@ -124,9 +124,9 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle gannen year") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "令和元年".toList,
-        allRules
+        allJapaneseRules
       ),
       List(Year(2019))
     )
@@ -134,28 +134,28 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle japanese kanji number over 10") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("三十一".toList, allRules),
+      NumberEvaluator.orderedIterate("三十一".toList, allJapaneseRules),
       List(JapaneseNumber(31))
     )
   }
 
   test("iterate: can handle standalone kanji 10") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("十".toList, allRules),
+      NumberEvaluator.orderedIterate("十".toList, allJapaneseRules),
       List(JapaneseNumber(10))
     )
   }
 
   test("iterate: can handle standalone kanji 100") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("百".toList, allRules),
+      NumberEvaluator.orderedIterate("百".toList, allJapaneseRules),
       List(JapaneseNumber(100))
     )
   }
 
   test("iterate: can handle hundred with multiplier followed by kanji number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("三百二十".toList, allRules),
+      NumberEvaluator.orderedIterate("三百二十".toList, allJapaneseRules),
       List(JapaneseNumber(320))
     )
   }
@@ -164,49 +164,51 @@ class JapaneseNumberCheckerTest extends FunSuite {
     "iterate: can handle thousand with multiplier followed by kanji number"
   ) {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("三千三百二十二".toList, allRules),
+      NumberEvaluator.orderedIterate("三千三百二十二".toList, allJapaneseRules),
       List(JapaneseNumber(3322))
     )
   }
 
   test("iterate: can handle standalone japanese thousand") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("千".toList, allRules),
+      NumberEvaluator.orderedIterate("千".toList, allJapaneseRules),
       List(JapaneseNumber(1000))
     )
   }
 
   test("iterate: can handle standalone japanese ten thousand") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("万".toList, allRules),
+      NumberEvaluator.orderedIterate("万".toList, allJapaneseRules),
       List(JapaneseNumber(10000))
     )
   }
 
   test("iterate: can handle kanji ten thousand followed by kanji number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("二万三千四百五十六".toList, allRules),
+      NumberEvaluator
+        .orderedIterate("二万三千四百五十六".toList, allJapaneseRules),
       List(JapaneseNumber(23456))
     )
   }
 
   test("iterate: can handle kanji hundred million followed by kanji number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("三億四千五百六十七万八千九百十一".toList, allRules),
+      NumberEvaluator
+        .orderedIterate("三億四千五百六十七万八千九百十一".toList, allJapaneseRules),
       List(JapaneseNumber(345678911))
     )
   }
 
   test("iterate: can handle standalone japanese hundred million") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("億".toList, allRules),
+      NumberEvaluator.orderedIterate("億".toList, allJapaneseRules),
       List(JapaneseNumber(100000000))
     )
   }
 
   test("iterate: can handle mixed arabic and kanji number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "35万123".toList,
         List(
           singleDigit
@@ -221,14 +223,15 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle long arabic number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate("123456789".toList, allRules),
+      NumberEvaluator
+        .orderedIterate("123456789".toList, allJapaneseRules),
       List(Number(123456789))
     )
   }
 
   test("iterate: can handle word digits in English") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "one is something we should find".toList,
         List(singleWordDigit)
       ),
@@ -238,7 +241,7 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle word tens in English") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "ten twenty thirty forty fifty sixty seventy eighty".toList,
         List(singleWordTens)
       ),
@@ -264,7 +267,7 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can handle word large units in English") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "hundred thousand million billion".toList,
         List(singleWordLargeUnits)
       ),
@@ -282,7 +285,7 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can remove punctuation from word number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "one million, five hundred forty-three thousand, seven hundred and sixty-five".toList,
         List(
           singleWordTens
@@ -309,23 +312,52 @@ class JapaneseNumberCheckerTest extends FunSuite {
 
   test("iterate: can evaluate word number") {
     assertEquals(
-      JapaneseNumberChecker.orderedIterate(
+      NumberEvaluator.orderedIterate(
         "one million, five hundred forty-three thousand, seven hundred and sixty-five".toList,
-        List(
-          singleWordTens
-            .orElse(singleWordDigit)
-            .orElse(singleWordLargeUnits)
-            .orElse(wordNumberPunctuationRemoval),
-          wordDigitEvaluation,
-          wordTenEvaluation,
-          wordHundredEvaluation,
-          wordThousandEvaluation,
-          wordMillionEvaluation,
-          wordBillionEvaluation
-        )
+        allEnglishRules
       ),
       List(
         Number(1543765)
+      )
+    )
+  }
+
+  test("iterate: does not combine word digits of same magnitude") {
+    assertEquals(
+      NumberEvaluator.orderedIterate(
+        "one, two, three".toList,
+        allEnglishRules
+      ),
+      List(
+        Number(1),
+        Number(2),
+        Number(3)
+      )
+    )
+  }
+
+  test("iterate: does not combine tens") {
+    assertEquals(
+      NumberEvaluator.orderedIterate(
+        "twenty, thirty, forty".toList,
+        allEnglishRules
+      ),
+      List(
+        Number(20),
+        Number(30),
+        Number(40)
+      )
+    )
+  }
+
+  test("iterate: can evaluate mixed arabic numeral and word number") {
+    assertEquals(
+      NumberEvaluator.orderedIterate(
+        "7 billion, 542 million, and 32 thousand".toList,
+        allEnglishRules
+      ),
+      List(
+        Number(7542032000L)
       )
     )
   }

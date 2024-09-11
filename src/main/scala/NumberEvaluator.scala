@@ -3,7 +3,7 @@ import model.*
 
 import scala.annotation.tailrec
 
-object JapaneseNumberChecker {
+object NumberEvaluator {
   def rewrite[A](
       text: List[Char | A],
       rule: Rewrite[A]
@@ -44,7 +44,7 @@ object JapaneseNumberChecker {
     else iterate(t, rule)
   }
 
-  val allRules: List[Rewrite[Entity]] = List(
+  val allJapaneseRules: List[Rewrite[Entity]] = List(
     singleDigit
       .orElse(multiDigit),
     japaneseDigits,
@@ -57,5 +57,20 @@ object JapaneseNumberChecker {
       .orElse(japaneseYears)
       .orElse(mixedNumberCombination)
       .orElse(japaneseNumberCombination)
+  )
+
+  val allEnglishRules: List[Rewrite[Entity]] = List(
+    singleDigit
+      .orElse(multiDigit)
+      .orElse(singleWordTens)
+      .orElse(singleWordDigit)
+      .orElse(singleWordLargeUnits)
+      .orElse(wordNumberPunctuationRemoval),
+    wordDigitEvaluation,
+    wordTenEvaluation,
+    wordHundredEvaluation,
+    wordThousandEvaluation,
+    wordMillionEvaluation,
+    wordBillionEvaluation
   )
 }

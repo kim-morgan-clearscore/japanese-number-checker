@@ -175,10 +175,21 @@ object Rules {
     .lift[Entity] { case (a: WordNumber) :: ' ' :: (b: WordNumber) :: rest =>
       a :: b :: rest
     }
+    .orElse(
+      Rewrite.lift[Entity] { case Number(a) :: ' ' :: (b: WordNumber) :: rest =>
+        Number(a) :: b :: rest
+      }
+    )
     .orElse(Rewrite.lift[Entity] {
       case (a: WordNumber) :: ',' :: ' ' :: (b: WordNumber) :: rest =>
         a :: b :: rest
     })
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: ',' :: ' ' :: Number(b) :: rest =>
+          a :: Number(b) :: rest
+      }
+    )
     .orElse(
       Rewrite.lift[Entity] {
         case (a: WordNumber) :: '-' :: (b: WordNumber) :: rest =>
@@ -189,6 +200,28 @@ object Rules {
       Rewrite.lift[Entity] {
         case (a: WordNumber) :: ' ' :: 'a' :: 'n' :: 'd' :: ' ' :: (b: WordNumber) :: rest =>
           a :: b :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: ',' :: ' ' :: 'a' :: 'n' :: 'd' :: ' ' :: Number(
+              b
+            ) :: rest =>
+          a :: Number(b) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: ',' :: ' ' :: 'a' :: 'n' :: 'd' :: ' ' :: (b: WordNumber) :: rest =>
+          a :: b :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: ' ' :: 'a' :: 'n' :: 'd' :: ' ' :: Number(
+              b
+            ) :: rest =>
+          a :: Number(b) :: rest
       }
     )
 
