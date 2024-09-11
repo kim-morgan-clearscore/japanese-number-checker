@@ -19,7 +19,10 @@ class JapaneseNumberCheckerTest extends FunSuite {
   ) {
     assertEquals(
       JapaneseNumberChecker
-        .orderedIterate("1 is something we should find".toList, List(singleDigit)),
+        .orderedIterate(
+          "1 is something we should find".toList,
+          List(singleDigit)
+        ),
       List(Number(1)) ++ " is something we should find".toList
     )
   }
@@ -220,6 +223,110 @@ class JapaneseNumberCheckerTest extends FunSuite {
     assertEquals(
       JapaneseNumberChecker.orderedIterate("123456789".toList, allRules),
       List(Number(123456789))
+    )
+  }
+
+  test("iterate: can handle word digits in English") {
+    assertEquals(
+      JapaneseNumberChecker.orderedIterate(
+        "one is something we should find".toList,
+        List(singleWordDigit)
+      ),
+      List(WordDigit(1)) ++ " is something we should find".toList
+    )
+  }
+
+  test("iterate: can handle word tens in English") {
+    assertEquals(
+      JapaneseNumberChecker.orderedIterate(
+        "ten twenty thirty forty fifty sixty seventy eighty".toList,
+        List(singleWordTens)
+      ),
+      List(
+        WordTen(10),
+        ' ',
+        WordTen(20),
+        ' ',
+        WordTen(30),
+        ' ',
+        WordTen(40),
+        ' ',
+        WordTen(50),
+        ' ',
+        WordTen(60),
+        ' ',
+        WordTen(70),
+        ' ',
+        WordTen(80)
+      )
+    )
+  }
+
+  test("iterate: can handle word large units in English") {
+    assertEquals(
+      JapaneseNumberChecker.orderedIterate(
+        "hundred thousand million billion".toList,
+        List(singleWordLargeUnits)
+      ),
+      List(
+        WordHundred,
+        ' ',
+        WordThousand,
+        ' ',
+        WordMillion,
+        ' ',
+        WordBillion
+      )
+    )
+  }
+
+  test("iterate: can remove punctuation from word number") {
+    assertEquals(
+      JapaneseNumberChecker.orderedIterate(
+        "one million, five hundred forty-three thousand, seven hundred and sixty-five".toList,
+        List(
+          singleWordTens
+            .orElse(singleWordDigit)
+            .orElse(singleWordLargeUnits)
+            .orElse(wordNumberPunctuationRemoval)
+        )
+      ),
+      List(
+        WordDigit(1),
+        WordMillion,
+        WordDigit(5),
+        WordHundred,
+        WordTen(40),
+        WordDigit(3),
+        WordThousand,
+        WordDigit(7),
+        WordHundred,
+        WordTen(60),
+        WordDigit(5)
+      )
+    )
+  }
+
+  test("iterate: can evaluate word number") {
+    assertEquals(
+      JapaneseNumberChecker.orderedIterate(
+        "one million, five hundred forty-three thousand, seven hundred and sixty-five".toList,
+        List(
+          singleWordTens
+            .orElse(singleWordDigit)
+            .orElse(singleWordLargeUnits)
+            .orElse(wordNumberPunctuationRemoval),
+          wordDigitEvaluation,
+          wordTenEvaluation,
+          wordHundredEvaluation,
+          wordThousandEvaluation,
+          wordMillionEvaluation,
+          wordBillionEvaluation
+        )
+      ),
+      List(
+        Number(1543765)
+      )
     )
   }
 

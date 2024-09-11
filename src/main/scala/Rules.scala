@@ -32,6 +32,240 @@ object Rules {
         Rewrite.lift { case '9' :: rest => Number(9) :: rest }
       )
 
+  val singleWordDigit: Rewrite[Entity] =
+    Rewrite
+      .lift[Entity] { case 'o' :: 'n' :: 'e' :: rest =>
+        WordDigit(1) :: rest
+      }
+      .orElse(
+        Rewrite.lift { case 't' :: 'w' :: 'o' :: rest => WordDigit(2) :: rest }
+      )
+      .orElse(
+        Rewrite.lift { case 't' :: 'h' :: 'r' :: 'e' :: 'e' :: rest =>
+          WordDigit(3) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'f' :: 'o' :: 'u' :: 'r' :: rest =>
+          WordDigit(4) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'f' :: 'i' :: 'v' :: 'e' :: rest =>
+          WordDigit(5) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 's' :: 'i' :: 'x' :: rest => WordDigit(6) :: rest }
+      )
+      .orElse(
+        Rewrite.lift { case 's' :: 'e' :: 'v' :: 'e' :: 'n' :: rest =>
+          WordDigit(7) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'e' :: 'i' :: 'g' :: 'h' :: 't' :: rest =>
+          WordDigit(8) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'n' :: 'i' :: 'n' :: 'e' :: rest =>
+          WordDigit(9) :: rest
+        }
+      )
+
+  val singleWordTens: Rewrite[Entity] =
+    Rewrite
+      .lift[Entity] { case 't' :: 'e' :: 'n' :: rest =>
+        WordTen(10) :: rest
+      }
+      .orElse(
+        Rewrite.lift { case 'e' :: 'l' :: 'e' :: 'v' :: 'e' :: 'n' :: rest =>
+          WordTen(11) :: rest
+        }
+      )
+      .orElse(Rewrite.lift {
+        case 't' :: 'w' :: 'e' :: 'l' :: 'v' :: 'e' :: rest =>
+          WordTen(12) :: rest
+      })
+      .orElse(
+        Rewrite.lift {
+          case 't' :: 'h' :: 'i' :: 'r' :: 't' :: 'e' :: 'e' :: 'n' :: rest =>
+            WordTen(13) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift {
+          case 'f' :: 'i' :: 'f' :: 't' :: 'e' :: 'e' :: 'n' :: rest =>
+            WordTen(15) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case WordDigit(a) :: 't' :: 'e' :: 'e' :: 'n' :: rest =>
+          WordTen(10 + a) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 't' :: 'w' :: 'e' :: 'n' :: 't' :: 'y' :: rest =>
+          WordTen(20) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 't' :: 'h' :: 'i' :: 'r' :: 't' :: 'y' :: rest =>
+          WordTen(30) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'f' :: 'o' :: 'r' :: 't' :: 'y' :: rest =>
+          WordTen(40) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'f' :: 'i' :: 'f' :: 't' :: 'y' :: rest =>
+          WordTen(50) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 's' :: 'i' :: 'x' :: 't' :: 'y' :: rest =>
+          WordTen(60) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift {
+          case 's' :: 'e' :: 'v' :: 'e' :: 'n' :: 't' :: 'y' :: rest =>
+            WordTen(70) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'e' :: 'i' :: 'g' :: 'h' :: 't' :: 'y' :: rest =>
+          WordTen(80) :: rest
+        }
+      )
+      .orElse(
+        Rewrite.lift { case 'n' :: 'i' :: 'n' :: 'e' :: 't' :: 'y' :: rest =>
+          WordTen(90) :: rest
+        }
+      )
+
+  val singleWordLargeUnits: Rewrite[Entity] = Rewrite
+    .lift[Entity] {
+      case 'h' :: 'u' :: 'n' :: 'd' :: 'r' :: 'e' :: 'd' :: rest =>
+        WordHundred :: rest
+    }
+    .orElse(
+      Rewrite.lift {
+        case 't' :: 'h' :: 'o' :: 'u' :: 's' :: 'a' :: 'n' :: 'd' :: rest =>
+          WordThousand :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift {
+        case 'm' :: 'i' :: 'l' :: 'l' :: 'i' :: 'o' :: 'n' :: rest =>
+          WordMillion :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift {
+        case 'b' :: 'i' :: 'l' :: 'l' :: 'i' :: 'o' :: 'n' :: rest =>
+          WordBillion :: rest
+      }
+    )
+
+  val wordNumberPunctuationRemoval: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case (a: WordNumber) :: ' ' :: (b: WordNumber) :: rest =>
+      a :: b :: rest
+    }
+    .orElse(Rewrite.lift[Entity] {
+      case (a: WordNumber) :: ',' :: ' ' :: (b: WordNumber) :: rest =>
+        a :: b :: rest
+    })
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: '-' :: (b: WordNumber) :: rest =>
+          a :: b :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] {
+        case (a: WordNumber) :: ' ' :: 'a' :: 'n' :: 'd' :: ' ' :: (b: WordNumber) :: rest =>
+          a :: b :: rest
+      }
+    )
+
+  val wordDigitEvaluation: Rewrite[Entity] = Rewrite.lift[Entity] {
+    case WordDigit(a) :: rest => Number(a) :: rest
+  }
+
+  val wordTenEvaluation: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case WordTen(a) :: Number(b) :: rest =>
+      Number(a + b) :: rest
+    }
+    .orElse(
+      Rewrite.lift[Entity] { case WordTen(a) :: rest =>
+        Number(a) :: rest
+      }
+    )
+
+  val wordHundredEvaluation: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case Number(a) :: WordHundred :: Number(c) :: rest =>
+      Number(a * 100 + c) :: rest
+    }
+    .orElse(
+      Rewrite.lift[Entity] { case Number(a) :: WordHundred :: rest =>
+        Number(a * 100) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] { case WordHundred :: rest =>
+        Number(100) :: rest
+      }
+    )
+
+  val wordThousandEvaluation: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case Number(a) :: WordThousand :: Number(c) :: rest =>
+      Number(a * 1000 + c) :: rest
+    }
+    .orElse(
+      Rewrite.lift[Entity] { case Number(a) :: WordThousand :: rest =>
+        Number(a * 1000) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] { case WordThousand :: rest =>
+        Number(1000) :: rest
+      }
+    )
+
+  val wordMillionEvaluation: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case Number(a) :: WordMillion :: Number(c) :: rest =>
+      Number(a * 1000000 + c) :: rest
+    }
+    .orElse(
+      Rewrite.lift[Entity] { case Number(a) :: WordMillion :: rest =>
+        Number(a * 1000000) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] { case WordMillion :: rest =>
+        Number(1000000) :: rest
+      }
+    )
+
+  val wordBillionEvaluation: Rewrite[Entity] = Rewrite
+    .lift[Entity] { case Number(a) :: WordBillion :: Number(c) :: rest =>
+      Number(a * 1000000000 + c) :: rest
+    }
+    .orElse(
+      Rewrite.lift[Entity] { case Number(a) :: WordBillion :: rest =>
+        Number(a * 1000000000) :: rest
+      }
+    )
+    .orElse(
+      Rewrite.lift[Entity] { case WordBillion :: rest =>
+        Number(1000000000) :: rest
+      }
+    )
+
   val japaneseDigits = Rewrite
     .lift[Entity] { case '一' :: rest =>
       JapaneseNumber(1) :: rest
